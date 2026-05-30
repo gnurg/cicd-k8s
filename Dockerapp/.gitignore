@@ -1,6 +1,5 @@
 ## Local development secrets and helpers (do NOT commit)
 .env
-run.bat
 
 ## Virtual environments
 .venv/
