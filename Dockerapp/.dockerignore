@@ -1,0 +1,16 @@
+## Docker build context — exclude local dev files and VCS
+
+.git
+.gitignore
+.env
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.vscode/
+.DS_Store
+.idea/
+
+.dockerapp.env.*
+
+run.bat

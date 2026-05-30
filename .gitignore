@@ -1,0 +1,14 @@
+## IDE / editor
+.vscode/
+.idea/
+
+## OS files
+.DS_Store
+Thumbs.db
+
+## Docker artifacts
+*.tar
+docker-compose.override.yml
+
+## Note: Python/app-specific ignores for Dockerapp/ are in Dockerapp/.gitignore
+

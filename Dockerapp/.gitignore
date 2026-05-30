@@ -1,0 +1,20 @@
+## Local development secrets and helpers (do NOT commit)
+.env
+run.bat
+
+## Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+## Python bytecode and caches
+__pycache__/
+*.py[cod]
+*.pyc
+
+## Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
