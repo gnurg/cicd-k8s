@@ -160,10 +160,11 @@ docker ps -a
 
 **Local (non-Docker) run**
 
-If you want to run the app locally on your machine for development (without Docker), the `Dockerapp` folder contains a helper `run.bat` and an example `.env` file.
+If you want to run the app locally on your machine for development (without Docker), the `Dockerapp` folder contains helper files:
 
 - `Dockerapp/.env`: example environment variables for local runs. Do NOT store real secrets here.
-- `Dockerapp/run.bat`: creates/activates a `.venv` virtual environment, installs dependencies and runs `python app.py` (the app will load `.env`).
+- `Dockerapp/run.bat`: Windows helper script — creates/activates a `.venv`, installs dependencies and runs `python app.py` (optional; you can run commands manually if preferred).
+- `Dockerapp/.env.example`: template showing required variables (copy to `.env` and customize).
 
 Manual equivalent commands on Windows (cmd):
 
@@ -175,4 +176,4 @@ pip install -r requirements.txt
 python app.py
 ```
 
-Important: do not commit `Dockerapp/.env`, `.venv` or `Dockerapp/run.bat` to a public repository. The repository root `.gitignore` has been updated to exclude these files. If you prefer, create a `Dockerapp/.env.example` (without secrets) to document required variables.
+Important: do not commit `Dockerapp/.env` or `.venv` to a public repository. The repository `.gitignore` files have been updated to exclude these. The `run.bat` helper is committed for team convenience (Windows developers).
