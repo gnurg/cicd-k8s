@@ -1,10 +1,12 @@
-from flask import Flask, json
-import socket, os
+from flask import Flask
+import socket
+import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
 app = Flask(__name__)
+
 
 @app.route("/")
 def hello_world():
@@ -18,4 +20,3 @@ def hello_world():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
-

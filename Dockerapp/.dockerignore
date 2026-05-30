@@ -12,5 +12,6 @@ __pycache__/
 .idea/
 
 .dockerapp.env.*
+requirements-dev.txt
 
 run.bat
