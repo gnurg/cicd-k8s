@@ -176,32 +176,3 @@ python app.py
 ```
 
 Important: do not commit `Dockerapp/.env`, `.venv` or `Dockerapp/run.bat` to a public repository. The repository root `.gitignore` has been updated to exclude these files. If you prefer, create a `Dockerapp/.env.example` (without secrets) to document required variables.
-
----
-
-If you want, I can also:
-
-- Build the image locally (if Docker is available),
-- Add or update a `.dockerignore` if needed,
-- Create scripts to build and push to your private registry.
-
-Tell me how you'd like to proceed.
-
-**Esecuzione locale (senza Docker)**
-
-Se vuoi eseguire l'app isolata sul tuo PC (sviluppo locale) senza usare Docker, nella cartella `Dockerapp` è presente uno script `run.bat` e un esempio di `.env`.
-
-- `Dockerapp/.env`: contiene variabili d'ambiente di esempio per il run locale. NON includere segreti reali.
-- `Dockerapp/run.bat`: crea/attiva un virtualenv `.venv`, installa le dipendenze e avvia `python app.py` (l'app carica automaticamente il `.env`).
-
-Comandi manuali equivalenti su Windows (cmd):
-
-```bat
-cd /d d:\dev\personale\cicd-k8s\Dockerapp
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-python app.py
-```
-
-Nota importante: non includere `Dockerapp/.env`, `.venv` o `Dockerapp/run.bat` nel repository pubblico. Ho aggiornato il file `.gitignore` nella root per escludere questi file (e altri file temporanei). Se preferisci, crea un file `Dockerapp/.env.example` senza valori sensibili per documentare le variabili richieste.
