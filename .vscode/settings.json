@@ -1,0 +1,13 @@
+{
+    "files.exclude": {
+        "**/.git": false,
+        "**/.git.backup": true
+    },
+    "[python]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.codeActionsOnSave": {
+            "source.fixAll.ruff": "explicit"
+        }
+    }
+}

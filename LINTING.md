@@ -68,18 +68,7 @@ First run asks for an image size — **Micro** is sufficient for this workflow.
 
 Install the **Ruff** extension from the marketplace: `astral-sh.ruff`
 
-Add to VS Code user settings (`Ctrl+Shift+P` → `Open User Settings JSON`):
-```json
-"[python]": {
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "charliermarsh.ruff",
-    "editor.codeActionsOnSave": {
-        "source.fixAll.ruff": "explicit"
-    }
-}
-```
-
-Ruff will now lint, fix, and format automatically on every save.
+Workspace settings are already configured in `.vscode/settings.json` — no manual setup needed. Ruff will lint, fix, and format automatically on every save.
 
 ---
 
