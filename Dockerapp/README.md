@@ -21,7 +21,7 @@ Instead of a generic name like `dockerapp`, consider a descriptive image name su
 - `private-flask-app`
 - `k8s-demo-webapp`
 
-Choose a name that fits your usage. For example, `cicd-k8s:latest` works well for a personal project.
+Choose a name that fits your usage. For example, `gnurg/cicd-k8s-webapp:latest` works well for a personal project.
 
 **Prerequisites**
 
@@ -34,16 +34,16 @@ Choose a name that fits your usage. For example, `cicd-k8s:latest` works well fo
 Open a shell at the project root and run:
 
 ```bash
-docker build -t cicd-k8s:latest -f Dockerapp/Dockerfile Dockerapp
+docker build -t gnurg/cicd-k8s-webapp:latest -f Dockerapp/Dockerfile Dockerapp
 ```
 
-- `-t cicd-k8s:latest`: image name and tag.
+- `-t gnurg/cicd-k8s-webapp:latest`: image name and tag.
 - `-f Dockerapp/Dockerfile Dockerapp`: use the `Dockerfile` in the `Dockerapp` folder.
 
 Verify the image was created:
 
 ```bash
-docker images | grep cicd-k8s || docker images cicd-k8s
+docker images | grep gnurg/cicd-k8s-webapp || docker images gnurg/cicd-k8s-webapp
 ```
 
 **Run the app locally with Docker**
@@ -51,7 +51,7 @@ docker images | grep cicd-k8s || docker images cicd-k8s
 Quick example (maps container port `80` to host port `8080`):
 
 ```bash
-docker run --rm -p 8080:80 cicd-k8s:latest
+docker run --rm -p 8080:80 gnurg/cicd-k8s-webapp:latest
 ```
 
 Open http://localhost:8080 in your browser.
@@ -61,13 +61,13 @@ To pass environment variables (custom header, colors, etc.):
 ```bash
 docker run --rm -p 8080:80 \
   -e CUSTOM_HEADER="Hello from container" -e BG_COLOR=lightblue \
-  cicd-k8s:latest
+  gnurg/cicd-k8s-webapp:latest
 ```
 
 Or use an environment override file (e.g. `.dockerapp.env.override`) with selected variables:
 
 ```bash
-docker run --rm -p 8080:80 --env-file Dockerapp/.dockerapp.env.override cicd-k8s:latest
+docker run --rm -p 8080:80 --env-file Dockerapp/.dockerapp.env.override gnurg/cicd-k8s-webapp:latest
 ```
 
 The `.dockerapp.env.override` file overrides only the specified variables; all others use Dockerfile defaults.
@@ -84,33 +84,33 @@ You have several options to keep the image private:
 Example (generic):
 
 ```bash
-docker tag cicd-k8s:latest myregistry.example.com/myrepo/cicd-k8s:latest
+docker tag gnurg/cicd-k8s-webapp:latest myregistry.example.com/myrepo/gnurg/cicd-k8s-webapp:latest
 docker login myregistry.example.com
-docker push myregistry.example.com/myrepo/cicd-k8s:latest
+docker push myregistry.example.com/myrepo/gnurg/cicd-k8s-webapp:latest
 ```
 
 Example (AWS ECR):
 
 ```bash
 aws ecr get-login-password --region <REGION> | docker login --username AWS --password-stdin <AWS_ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com
-docker tag cicd-k8s:latest <AWS_ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/myrepo/cicd-k8s:latest
-docker push <AWS_ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/myrepo/cicd-k8s:latest
+docker tag gnurg/cicd-k8s-webapp:latest <AWS_ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/myrepo/gnurg/cicd-k8s-webapp:latest
+docker push <AWS_ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/myrepo/gnurg/cicd-k8s-webapp:latest
 ```
 
 Example (GitHub Container Registry - private):
 
 ```bash
 docker login ghcr.io -u <USERNAME> -p <PERSONAL_ACCESS_TOKEN>
-docker tag cicd-k8s:latest ghcr.io/<USERNAME>/cicd-k8s:latest
-docker push ghcr.io/<USERNAME>/cicd-k8s:latest
+docker tag gnurg/cicd-k8s-webapp:latest ghcr.io/<USERNAME>/gnurg/cicd-k8s-webapp:latest
+docker push ghcr.io/<USERNAME>/gnurg/cicd-k8s-webapp:latest
 ```
 
 Example (Docker Hub private):
 
 ```bash
 docker login -u <USERNAME> -p <PASSWORD>
-docker tag cicd-k8s:latest <USERNAME>/<REPO>:cicd-k8s
-docker push <USERNAME>/<REPO>:cicd-k8s
+docker tag gnurg/cicd-k8s-webapp:latest <USERNAME>/<REPO>:gnurg/cicd-k8s-webapp
+docker push <USERNAME>/<REPO>:gnurg/cicd-k8s-webapp
 ```
 
 On Docker Hub, create a repository and set it to **Private** in the repository settings.
@@ -120,11 +120,11 @@ On Docker Hub, create a repository and set it to **Private** in the repository s
 If you prefer not to use a registry, export the image to a file, transfer it, and import it on the target server:
 
 ```bash
-docker save -o cicd-k8s.tar cicd-k8s:latest
-# transfer cicd-k8s.tar to the target server (scp, rsync, USB...)
+docker save -o gnurg/cicd-k8s-webapp.tar gnurg/cicd-k8s-webapp:latest
+# transfer gnurg/cicd-k8s-webapp.tar to the target server (scp, rsync, USB...)
 # on the target server:
-docker load -i cicd-k8s.tar
-docker run --rm -p 8080:80 cicd-k8s:latest
+docker load -i gnurg/cicd-k8s-webapp.tar
+docker run --rm -p 8080:80 gnurg/cicd-k8s-webapp:latest
 ```
 
 3) Self-hosted registry
@@ -143,7 +143,7 @@ Install and configure a private Docker Registry (e.g. `registry:2`), protect it 
 Remove local image:
 
 ```bash
-docker rmi cicd-k8s:latest
+docker rmi gnurg/cicd-k8s-webapp:latest
 ```
 
 List containers:
@@ -169,7 +169,7 @@ If you want to run the app locally on your machine for development (without Dock
 Manual equivalent commands on Windows (cmd):
 
 ```bat
-cd /d d:\dev\personale\cicd-k8s\Dockerapp
+cd /d d:\dev\personale\gnurg/cicd-k8s-webapp\Dockerapp
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
