@@ -17,8 +17,8 @@ cd Dockerapp
 ## 2. Pre-commit configuration
 
 `.pre-commit-config.yaml` lives at the **repo root** and defines two hooks:
-- `ruff-check` — lints the code
-- `ruff-format` — formats the code
+- `ruff-check --fix` — lints the code and auto-fixes safe issues (unused imports, `== None` → `is None`, etc.)
+- `ruff-format` — formats the code (indentation, spacing, line length)
 
 ## 3. Register the Git hook
 
@@ -63,6 +63,23 @@ act pull_request  # simulates a pull_request event
 Both trigger the `lint` job since the workflow listens to both events. Use `act pull_request` to simulate exactly what happens when a PR is opened.
 
 First run asks for an image size — **Micro** is sufficient for this workflow.
+
+## 7. VS Code integration
+
+Install the **Ruff** extension from the marketplace: `astral-sh.ruff`
+
+Add to VS Code user settings (`Ctrl+Shift+P` → `Open User Settings JSON`):
+```json
+"[python]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.codeActionsOnSave": {
+        "source.fixAll.ruff": "explicit"
+    }
+}
+```
+
+Ruff will now lint, fix, and format automatically on every save.
 
 ---
 
