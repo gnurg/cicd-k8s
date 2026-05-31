@@ -29,11 +29,26 @@ Dockerapp\.venv\Scripts\pre-commit install
 
 From now on, every `git commit` will automatically run Ruff.
 
+## 4. CI/CD — GitHub Actions
+
+`.github/workflows/lint.yml` runs Ruff automatically on every `push` and `pull_request` using the official `astral-sh/ruff-action`. No Python setup needed.
+
+Ruff only checks the `Dockerapp/` folder (configured via `src: Dockerapp`). Results are visible under the **Actions** tab on GitHub.
+
 ---
 
 ## Manual run
 
 To run Ruff manually on the app:
-```powershell
+```cmd
 Dockerapp\.venv\Scripts\ruff check Dockerapp\app.py
 ```
+
+## Bypass pre-commit (for testing)
+
+To intentionally commit code with errors and test the CI pipeline:
+```cmd
+git commit -m "your message" --no-verify
+```
+
+This skips the pre-commit hook entirely. The CI pipeline on GitHub will still catch the errors.
