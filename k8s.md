@@ -36,6 +36,8 @@ Environments are simulated locally as **Kubernetes namespaces** — no real clou
 - [x] Configure namespace-specific deployments (replicas, ConfigMap env vars)
 - [x] Publish Docker image to Docker Hub
 - [x] Deploy the Flask app to Minikube (dev namespace) and verify in browser
+- [x] Deploy staging (2 pods running)
+- [x] Deploy prod (3 pods)
 - [ ] Add GitHub Actions step to build and push Docker image to Docker Hub
 - [ ] Add GitHub Actions step to deploy to dev on every push to `main`
 - [ ] Add staging deployment with a manual gate
@@ -122,6 +124,45 @@ During a rollout you will briefly see two ReplicaSets — the old one scaling do
 kubectl rollout undo deployment/cicd-k8s-webapp -n dev
 ```
 Kubernetes retains the last 10 ReplicaSets by default, then cleans up older ones automatically.
+
+---
+
+## 6. Deploy to staging and prod
+
+Same single command as dev — Kustomize applies the correct namespace, replicas, and ConfigMap for each environment:
+
+```cmd
+kubectl apply -k k8s/overlays/staging
+kubectl apply -k k8s/overlays/prod
+```
+
+Verify all resources in a namespace:
+```cmd
+kubectl get all -n staging
+kubectl get all -n prod
+```
+
+Expected: staging shows 2 pods, prod shows 3 pods — as configured in the overlays.
+
+### Testing each environment locally
+
+Due to a Minikube + Docker on Windows limitation, all `LoadBalancer` Services share the same `127.0.0.1:80` via `minikube tunnel`. Only one environment can be tested at a time in the browser.
+
+To switch environment, delete the current one and apply the next:
+
+```cmd
+kubectl delete -k k8s/overlays/dev
+kubectl apply -k k8s/overlays/staging
+```
+
+```cmd
+kubectl delete -k k8s/overlays/staging
+kubectl apply -k k8s/overlays/prod
+```
+
+Then open `http://127.0.0.1` — the background color confirms the active environment (green=dev, yellow=staging, red=prod).
+
+> This is a local simulation constraint only. On AWS EKS each environment gets its own DNS endpoint and all three can run simultaneously on port 80.
 
 ---
 
