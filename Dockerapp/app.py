@@ -1,6 +1,6 @@
 from flask import Flask
 import socket
-import os, sys, pathlib
+import os
 from dotenv import load_dotenv
 
 load_dotenv()
