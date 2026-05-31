@@ -43,6 +43,27 @@ Setup: **Settings → Branches → Add branch ruleset** → target `main` → en
 
 This enforces the flow: `feature branch → PR → lint passes → merge to main`.
 
+## 6. Test GitHub Actions locally with `act`
+
+**Requirement:** Docker installed and running.
+
+`act` simulates GitHub Actions locally in a Docker container — no push needed to test the workflow.
+
+Install:
+```cmd
+winget install nektos.act
+```
+
+Run the workflow locally from the repo root:
+```cmd
+act push          # simulates a push event (default)
+act pull_request  # simulates a pull_request event
+```
+
+Both trigger the `lint` job since the workflow listens to both events. Use `act pull_request` to simulate exactly what happens when a PR is opened.
+
+First run asks for an image size — **Micro** is sufficient for this workflow.
+
 ---
 
 ## Manual run
