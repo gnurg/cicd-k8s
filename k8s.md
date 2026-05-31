@@ -38,7 +38,7 @@ Environments are simulated locally as **Kubernetes namespaces** — no real clou
 - [x] Deploy the Flask app to Minikube (dev namespace) and verify in browser
 - [x] Deploy staging (2 pods running)
 - [x] Deploy prod (3 pods)
-- [ ] Add GitHub Actions step to build and push Docker image to Docker Hub
+- [x] Add GitHub Actions step to build and push Docker image to Docker Hub (with commit SHA tag)
 - [ ] Add GitHub Actions step to deploy to dev on every push to `main`
 - [ ] Add staging deployment with a manual gate
 - [ ] Add prod deployment with manual approval

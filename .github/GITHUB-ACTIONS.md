@@ -56,3 +56,5 @@ Uses three official Docker actions:
   - `sha-a1b2c3d` — commit SHA tag for traceability (every build is uniquely identified)
   - `latest` — also applied on pushes to `main`
 - `docker/build-push-action` — builds the image from `Dockerapp/Dockerfile` and pushes both tags to Docker Hub
+
+A second job `deploy-dev` is stubbed out in the workflow and runs after `build-push` succeeds. It updates the image tag in `k8s/overlays/dev` to the exact commit SHA. The actual `kubectl apply` is commented out until the cluster is migrated to AWS EKS — at that point, `aws-actions/amazon-eks-update-kubeconfig` will provide kubectl access to the cluster from the runner.
