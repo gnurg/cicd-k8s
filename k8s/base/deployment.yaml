@@ -1,0 +1,22 @@
+apiVersion: apps/v1  # use the apps/v1 API group which includes Deployment
+kind: Deployment     # resource type: manages a set of identical pods
+metadata:
+  name: cicd-k8s-webapp  # name of this Deployment resource in the cluster
+spec:
+  replicas: 1        # number of pod instances to run (overridden per environment by overlays)
+  selector:
+    matchLabels:
+      app: cicd-k8s-webapp  # the Deployment manages pods that have this label
+  template:          # template used to create each pod
+    metadata:
+      labels:
+        app: cicd-k8s-webapp  # label applied to every pod — must match selector.matchLabels above
+    spec:
+      containers:
+        - name: cicd-k8s-webapp          # name of the container inside the pod
+          image: gnurg/cicd-k8s-webapp:latest  # Docker image to run (overridden by CI/CD with a specific tag)
+          ports:
+            - containerPort: 5000 # port Flask listens on inside the container
+          envFrom:
+            - configMapRef:
+                name: cicd-k8s-webapp-config  # inject all keys from this ConfigMap as env variables

@@ -1,0 +1,4 @@
+apiVersion: v1       # core Kubernetes API group
+kind: Namespace      # resource type: logical partition of the cluster
+metadata:
+  name: dev          # namespace name — matches the namespace field in kustomization.yaml

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap        # resource type: stores non-sensitive configuration as key/value pairs
+metadata:
+  name: cicd-k8s-webapp-config
+  namespace: dev
+data:
+  CUSTOM_HEADER: "k8s (dev)"
+  BG_COLOR: "#d4edda"   # green — safe environment
+  FONT_COLOR: "#155724"

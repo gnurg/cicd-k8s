@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: prod  # all resources will be deployed into the "prod" namespace
+
+resources:
+  - ../../base      # inherit all resources from the base configuration
+  - namespace.yaml  # creates the prod namespace before deploying
+  - configmap.yaml  # environment-specific configuration values
+
+patches:
+  - patch: |-   # JSON patch to override a specific field in the base
+      - op: replace        # operation: replace an existing value
+        path: /spec/replicas  # path to the field inside the Deployment spec
+        value: 3           # prod runs three replicas for availability and load distribution
+    target:
+      kind: Deployment     # apply this patch only to Deployment resources
+      name: cicd-k8s-webapp  # apply only to the Deployment named cicd-k8s-webapp

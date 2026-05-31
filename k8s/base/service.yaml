@@ -1,0 +1,11 @@
+apiVersion: v1   # core Kubernetes API group
+kind: Service    # resource type: stable network endpoint for a set of pods
+metadata:
+  name: cicd-k8s-webapp  # name of this Service resource in the cluster
+spec:
+  type: LoadBalancer   # exposes the service externally — on Minikube use "minikube tunnel", on AWS EKS provisions an ALB automatically
+  selector:
+    app: cicd-k8s-webapp  # routes traffic to pods with this label (matches Deployment pods)
+  ports:
+    - port: 80         # port exposed by the Service externally
+      targetPort: 5000 # port on the container to forward traffic to (Flask port)

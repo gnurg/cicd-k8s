@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap        # resource type: stores non-sensitive configuration as key/value pairs
+metadata:
+  name: cicd-k8s-webapp-config
+  namespace: prod
+data:
+  CUSTOM_HEADER: "k8s (prod)"
+  BG_COLOR: "#f8d7da"   # red — maximum attention, this is production
+  FONT_COLOR: "#721c24"

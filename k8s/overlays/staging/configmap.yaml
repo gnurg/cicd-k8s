@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap        # resource type: stores non-sensitive configuration as key/value pairs
+metadata:
+  name: cicd-k8s-webapp-config
+  namespace: staging
+data:
+  CUSTOM_HEADER: "k8s (staging)"
+  BG_COLOR: "#fff3cd"   # yellow — caution, not production
+  FONT_COLOR: "#856404"
