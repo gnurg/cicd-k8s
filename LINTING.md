@@ -35,6 +35,14 @@ From now on, every `git commit` will automatically run Ruff.
 
 Ruff only checks the `Dockerapp/` folder (configured via `src: Dockerapp`). Results are visible under the **Actions** tab on GitHub.
 
+## 5. Branch protection
+
+The real value of CI is on **Pull Requests**: configure GitHub to block merges on `main` until the `lint` check passes.
+
+Setup: **Settings → Branches → Add branch ruleset** → target `main` → enable **Require status checks to pass** → add `lint`.
+
+This enforces the flow: `feature branch → PR → lint passes → merge to main`.
+
 ---
 
 ## Manual run
