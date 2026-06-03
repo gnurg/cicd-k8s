@@ -39,9 +39,9 @@ Environments are simulated locally as **Kubernetes namespaces** — no real clou
 - [x] Deploy staging (2 pods running)
 - [x] Deploy prod (3 pods)
 - [x] Add GitHub Actions step to build and push Docker image to Docker Hub (with commit SHA tag)
-- [ ] Add GitHub Actions step to deploy to dev on every push to `main`
-- [ ] Add staging deployment with a manual gate
-- [ ] Add prod deployment with manual approval
+- [x] Add GitHub Actions step to deploy to dev on every push to `main`
+- [x] Add staging deployment with a manual gate
+- [x] Add prod deployment with manual approval
 - [ ] Migrate to AWS EKS
 
 ---

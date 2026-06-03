@@ -57,4 +57,14 @@ Uses three official Docker actions:
   - `latest` — also applied on pushes to `main`
 - `docker/build-push-action` — builds the image from `Dockerapp/Dockerfile` and pushes both tags to Docker Hub
 
-A second job `deploy-dev` is stubbed out in the workflow and runs after `build-push` succeeds. It updates the image tag in `k8s/overlays/dev` to the exact commit SHA. The actual `kubectl apply` is commented out until the cluster is migrated to AWS EKS — at that point, `aws-actions/amazon-eks-update-kubeconfig` will provide kubectl access to the cluster from the runner.
+Three deploy jobs follow `build-push` in sequence, each linked to a GitHub Environment:
+
+| Job | Environment | Trigger |
+|-----|-------------|---------|
+| `deploy-dev` | `dev` | automatic after `build-push` |
+| `deploy-staging` | `staging` | manual approval required |
+| `deploy-prod` | `prod` | manual approval required |
+
+Each job updates the image tag in the corresponding Kustomize overlay to the exact commit SHA. The actual `kubectl apply` is commented out until the cluster is migrated to AWS EKS — at that point, uncomment the `Configure kubectl` and `Deploy` steps in each job.
+
+GitHub Environments are configured under **Settings → Environments**. Staging and prod have **Required reviewers** set — GitHub pauses the pipeline and sends a notification before those jobs start.
