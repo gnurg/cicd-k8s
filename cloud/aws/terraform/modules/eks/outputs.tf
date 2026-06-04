@@ -10,5 +10,5 @@ output "cluster_endpoint" {                      # our chosen name — reference
 
 output "cluster_certificate" {                   # our chosen name — referenced in root outputs.tf as module.eks.cluster_certificate
   description = "Certificate authority data for kubectl authentication"
-  value       = aws_eks_cluster.main.certificate_authority[0].data  # [0] because it's a list with one element
+  value       = aws_eks_cluster.main.certificate_authority[0].data  # [0] because it is a list with one element
 }

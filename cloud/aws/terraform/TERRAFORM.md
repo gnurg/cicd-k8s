@@ -219,32 +219,76 @@ After apply completes, verify the resources in the AWS Console (region: **eu-wes
 
 ### Step 5 — Connect kubectl to the cluster
 
-After apply, configure kubectl to talk to EKS instead of Minikube:
+kubectl uses a file `~/.kube/config` to know which cluster to talk to. Each cluster is a **context** in this file. Before running this step, kubectl is pointing to Minikube:
+
+```cmd
+kubectl config current-context   # shows the active context (likely "minikube")
+```
+
+Configure kubectl to add the EKS cluster as a new context and switch to it:
 
 ```cmd
 aws eks update-kubeconfig --name cicd-k8s-cluster --region eu-west-1 --profile cicd-k8s
 ```
 
-Verify the connection:
+This command:
+- Reads the EKS cluster endpoint and certificate from AWS
+- Adds a new context to `~/.kube/config` named `arn:aws:eks:eu-west-1:...:cluster/cicd-k8s-cluster`
+- Sets it as the active context
+- Does NOT modify anything on AWS — only modifies the local `~/.kube/config` file
+
+To switch back to Minikube later:
+```cmd
+kubectl config use-context minikube
+```
+
+Verify the EKS connection — **run the access entry commands below first, otherwise kubectl will return a credentials error:**
 ```cmd
 kubectl get pods -A
 ```
 
 #### Grant AWS Console access to Kubernetes resources
 
-By default the AWS Console shows: *"Your current IAM principal doesn't have access to Kubernetes objects on this cluster."* This is because the console needs an explicit EKS access entry.
+By default the AWS Console shows: *"Your current IAM principal doesn't have access to Kubernetes objects on this cluster."* Two commands are needed — run them once after `terraform apply`:
 
-Run these two commands once after `terraform apply`:
-
+**Step 1 — Create an access entry:**
 ```cmd
 aws eks create-access-entry --cluster-name cicd-k8s-cluster --principal-arn arn:aws:iam::664003006512:user/cicd-k8s-admin --region eu-west-1 --profile cicd-k8s
 ```
+This registers the IAM user `cicd-k8s-admin` as a known principal in EKS. Without this, EKS does not recognise the user at all.
 
+**Step 2 — Associate an access policy:**
 ```cmd
 aws eks associate-access-policy --cluster-name cicd-k8s-cluster --principal-arn arn:aws:iam::664003006512:user/cicd-k8s-admin --policy-arn arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy --access-scope type=cluster --region eu-west-1 --profile cicd-k8s
 ```
+This grants the `AmazonEKSClusterAdminPolicy` to that principal — equivalent to Kubernetes `cluster-admin`. Required to view resources in the AWS Console and to run any `kubectl` command.
 
-After this, the AWS Console EKS → Resources tab will show pods, deployments, and namespaces.
+After both commands, the AWS Console **EKS → Resources** tab will show pods, deployments, and namespaces.
+
+> **Important:** The access entry must match the IAM principal you are logged in with in the AWS Console. `cicd-k8s-admin` is a CLI-only user — if you are browsing the console with the **root account**, you need a separate access entry for the root account:
+
+```cmd
+aws eks create-access-entry --cluster-name cicd-k8s-cluster --principal-arn arn:aws:iam::664003006512:root --region eu-west-1 --profile cicd-k8s
+```
+
+```cmd
+aws eks associate-access-policy --cluster-name cicd-k8s-cluster --principal-arn arn:aws:iam::664003006512:root --policy-arn arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy --access-scope type=cluster --region eu-west-1 --profile cicd-k8s
+```
+
+The ARN `arn:aws:iam::664003006512:root` is the standard AWS format for the root account — the number is your AWS account ID.
+
+#### Fix coredns toleration for Fargate
+
+By default `coredns` has a `CriticalAddonsOnly` toleration that prevents Fargate from scheduling it — pods will remain in `Pending` state with `no nodes available to schedule pods`. Remove it with:
+
+```cmd
+kubectl patch deployment coredns -n kube-system --type=json -p="[{\"op\":\"remove\",\"path\":\"/spec/template/spec/tolerations\"}]"
+```
+
+Wait until both coredns pods are `Running` before proceeding:
+```cmd
+kubectl get pods -n kube-system
+```
 
 You should see system pods running in the `kube-system` namespace on Fargate.
 
@@ -258,6 +302,15 @@ The app is now running on AWS EKS. To access it externally, the LoadBalancer Ser
 
 ### Step 6 — Destroy (always run this when done to avoid costs)
 
+If you deployed any Kubernetes resources, remove them first — otherwise Terraform cannot delete the VPC because the Kubernetes LoadBalancer Service keeps the subnets occupied:
+
+```cmd
+kubectl delete -k k8s/overlays/dev
+kubectl delete -k k8s/overlays/staging
+kubectl delete -k k8s/overlays/prod
+```
+
+Then destroy the infrastructure:
 ```cmd
 terraform destroy
 ```
