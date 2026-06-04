@@ -97,6 +97,53 @@ State is stored in `terraform.tfstate` — Terraform uses this to track what it 
 
 ---
 
+## Credentials
+
+Terraform reads AWS credentials from environment variables. The approach differs between local development and CI/CD.
+
+### Local development
+
+Use the named AWS CLI profile — safer than exposing raw credentials in the terminal.
+
+Or set it manually:
+```cmd
+set AWS_PROFILE=cicd-k8s
+```
+
+Two helper scripts are provided in `cloud/aws/` that do the same and print a reminder:
+
+**CMD** — must be run with `call` so the variable persists in the current session:
+```cmd
+call cloud\aws\set-profile.bat
+```
+
+**PowerShell** — must be dot-sourced with `.` so the variable persists in the current session:
+```powershell
+. .\cloud\aws\set-profile.ps1
+```
+
+Verify the profile is set:
+```cmd
+echo %AWS_PROFILE%
+```
+Expected output: `cicd-k8s`. If you see `%AWS_PROFILE%` printed literally, the variable is not set — Terraform will fail with a credentials error.
+
+The AWS provider reads `AWS_PROFILE` automatically and uses the credentials configured for that profile (see [SETUP.md](../SETUP.md)).
+
+### CI/CD (GitHub Actions, Jenkins)
+
+Named profiles don't exist on CI/CD machines. Inject credentials via environment variables:
+
+```cmd
+AWS_ACCESS_KEY_ID=your_key_id
+AWS_SECRET_ACCESS_KEY=your_secret_key
+AWS_DEFAULT_REGION=eu-west-1
+```
+
+On GitHub Actions these are set via repository secrets and injected into the workflow automatically.
+
+---
+
 ## Usage
 
 Initialize (run once):

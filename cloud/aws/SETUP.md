@@ -42,6 +42,10 @@ Create a dedicated IAM user for CLI access — never use root credentials for da
 | `AmazonEC2ContainerRegistryFullAccess` | Push and pull images to/from ECR (AWS's private Docker registry). Even though we currently use Docker Hub, ECR will be used in production to keep images private and close to the cluster. |
 | `AmazonVPCFullAccess` | Create the VPC, subnets, security groups, and load balancers that EKS needs. Without this, cluster creation fails because the network infrastructure cannot be provisioned. |
 | `IAMFullAccess` | EKS automatically creates IAM roles during setup (one for the cluster, one for the nodes). Without this it cannot create those roles and the cluster won't start. |
+| `AmazonS3FullAccess` | Create and manage the S3 bucket used for Terraform remote state storage. |
+| `AmazonDynamoDBFullAccess` | Create and manage the DynamoDB table used for Terraform state locking. |
+
+> **Tech debt — Least Privilege:** The `*FullAccess` managed policies above are overly permissive and would never pass a security review in a real environment. The correct approach is to create **custom IAM policies** with only the specific actions needed. For example, S3 only needs `s3:CreateBucket`, `s3:PutBucketVersioning`, `s3:GetObject`, `s3:PutObject`, `s3:DeleteObject`, `s3:ListBucket`. Similarly for DynamoDB, EKS, and the others. For this personal learning project `FullAccess` policies are acceptable as a shortcut, but should be replaced with granular custom policies before using this setup in any shared or production environment.
 
 ---
 
