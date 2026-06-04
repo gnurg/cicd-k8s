@@ -1731,8 +1731,8 @@ aws eks update-kubeconfig --name cicd-k8s-cluster --region eu-west-1 --profile c
        TAB 6: REMOTE STATE
   =========================================== -->
   <section id="remote-state" class="tab-panel">
-    <h2 class="section-title">Remote State — S3 + DynamoDB</h2>
-    <p class="subtitle">Centralized state storage with distributed locking — the AWS-standard pattern for team and CI/CD Terraform usage</p>
+    <h2 class="section-title">Remote State — S3 Native Locking</h2>
+    <p class="subtitle">Centralized state storage with S3-native locking (Terraform 1.10+) — no DynamoDB required</p>
 
     <!-- Problem / Solution -->
     <div class="row2" style="margin-bottom:20px;">
@@ -1749,198 +1749,293 @@ aws eks update-kubeconfig --name cicd-k8s-cluster --region eu-west-1 --profile c
         <div class="card-title">&#9989; The Solution</div>
         <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--text-muted);">
           <li style="display:flex;gap:8px;align-items:flex-start;"><span style="color:var(--green-text);">&#10003;</span> State stored in S3 — one shared source of truth</li>
-          <li style="display:flex;gap:8px;align-items:flex-start;"><span style="color:var(--green-text);">&#10003;</span> DynamoDB lock prevents concurrent runs from conflicting</li>
+          <li style="display:flex;gap:8px;align-items:flex-start;"><span style="color:var(--green-text);">&#10003;</span> S3 native lock file prevents concurrent runs from conflicting (no DynamoDB needed)</li>
           <li style="display:flex;gap:8px;align-items:flex-start;"><span style="color:var(--green-text);">&#10003;</span> S3 versioning allows rollback to any previous state</li>
           <li style="display:flex;gap:8px;align-items:flex-start;"><span style="color:var(--green-text);">&#10003;</span> Encryption at rest + public access blocked</li>
         </ul>
       </div>
     </div>
 
-    <!-- S3 + DynamoDB details -->
-    <div class="state-grid">
-      <div class="state-card">
-        <div class="state-card-header s3">&#128193; S3 Bucket</div>
-        <div class="state-card-body">
-          <div class="state-prop">
-            <div class="state-prop-label">Name</div>
-            <div class="state-prop-value">cicd-k8s-terraform-state</div>
-          </div>
-          <div class="state-prop">
-            <div class="state-prop-label">State key path</div>
-            <div class="state-prop-value">eks/terraform.tfstate</div>
-          </div>
-          <div class="state-prop">
-            <div class="state-prop-label">Region</div>
-            <div class="state-prop-value">eu-west-1</div>
-          </div>
-          <div class="state-prop">
-            <div class="state-prop-label">Encryption</div>
-            <div class="state-prop-value">encrypt = true (AES-256)</div>
-          </div>
-          <div class="state-prop">
-            <div class="state-prop-label">Versioning</div>
-            <div class="state-prop-value">Enabled — rollback supported</div>
-          </div>
-          <div class="state-prop">
-            <div class="state-prop-label">Public access</div>
-            <div class="state-prop-value">Fully blocked</div>
-          </div>
+    <!-- Current approach: S3 only -->
+    <div style="border:2px solid var(--green-text);border-radius:12px;padding:4px;margin-bottom:24px;">
+      <div style="background:rgba(76,175,80,0.1);border-radius:9px;padding:16px 20px;">
+        <div style="font-size:13px;font-weight:700;color:var(--green-text);margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+          <span>&#9989;</span> Current Approach — S3 Native Locking (Terraform 1.10+)
         </div>
-      </div>
 
-      <div class="state-card">
-        <div class="state-card-header dynamo">&#128202; DynamoDB Table</div>
-        <div class="state-card-body">
-          <div class="state-prop">
-            <div class="state-prop-label">Name</div>
-            <div class="state-prop-value">cicd-k8s-terraform-locks</div>
+        <!-- S3 detail cards -->
+        <div class="state-grid">
+          <div class="state-card">
+            <div class="state-card-header s3">&#128193; S3 Bucket</div>
+            <div class="state-card-body">
+              <div class="state-prop">
+                <div class="state-prop-label">Name</div>
+                <div class="state-prop-value">cicd-k8s-terraform-state</div>
+              </div>
+              <div class="state-prop">
+                <div class="state-prop-label">State key path</div>
+                <div class="state-prop-value">eks/terraform.tfstate</div>
+              </div>
+              <div class="state-prop">
+                <div class="state-prop-label">Lock file path</div>
+                <div class="state-prop-value">eks/terraform.tfstate.tflock</div>
+              </div>
+              <div class="state-prop">
+                <div class="state-prop-label">Region</div>
+                <div class="state-prop-value">eu-west-1</div>
+              </div>
+              <div class="state-prop">
+                <div class="state-prop-label">Encryption</div>
+                <div class="state-prop-value">encrypt = true (AES-256)</div>
+              </div>
+              <div class="state-prop">
+                <div class="state-prop-label">Versioning</div>
+                <div class="state-prop-value">Enabled — rollback supported</div>
+              </div>
+              <div class="state-prop">
+                <div class="state-prop-label">Public access</div>
+                <div class="state-prop-value">Fully blocked</div>
+              </div>
+            </div>
           </div>
-          <div class="state-prop">
-            <div class="state-prop-label">Partition key</div>
-            <div class="state-prop-value">LockID (STRING)</div>
-          </div>
-          <div class="state-prop">
-            <div class="state-prop-label">Billing mode</div>
-            <div class="state-prop-value">PAY_PER_REQUEST</div>
-          </div>
-          <div class="state-prop">
-            <div class="state-prop-label">Region</div>
-            <div class="state-prop-value">eu-west-1</div>
-          </div>
-          <div class="state-prop">
-            <div class="state-prop-label">Cost</div>
-            <div class="state-prop-value">~$0 (charged per lock only)</div>
-          </div>
-        </div>
-      </div>
 
-      <div class="state-card">
-        <div class="state-card-header" style="background:rgba(233,69,96,0.12);border-bottom:1px solid rgba(233,69,96,0.3);color:var(--accent);">
-          &#128274; Terraform backend config
-        </div>
-        <div class="state-card-body">
-          <pre style="margin:0;font-size:11.5px;">backend "s3" {
-  bucket = "cicd-k8s-terraform-state"
-  key    = "eks/terraform.tfstate"
-  region = "eu-west-1"
-  dynamodb_table =
-    "cicd-k8s-terraform-locks"
-  encrypt = true
+          <div class="state-card">
+            <div class="state-card-header" style="background:rgba(233,69,96,0.12);border-bottom:1px solid rgba(233,69,96,0.3);color:var(--accent);">
+              &#128274; Terraform backend config
+            </div>
+            <div class="state-card-body">
+              <pre style="margin:0;font-size:11.5px;">backend "s3" {
+  bucket       = "cicd-k8s-terraform-state"
+  key          = "eks/terraform.tfstate"
+  region       = "eu-west-1"
+  use_lockfile = true
+  encrypt      = true
 }</pre>
-          <div class="info-box" style="margin-top:10px;font-size:11px;">
-            <strong>Note:</strong> Variables are not allowed inside <code>backend</code> blocks — all values must be hardcoded.
+              <div class="info-box" style="margin-top:10px;font-size:11px;">
+                <strong>use_lockfile = true</strong> — introduced in Terraform 1.10. Stores a <code>.tflock</code> file alongside the state object in S3 instead of using DynamoDB. No extra AWS service required.
+              </div>
+              <div class="info-box" style="margin-top:6px;font-size:11px;">
+                <strong>Note:</strong> Variables are not allowed inside <code>backend</code> blocks — all values must be hardcoded.
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Execution flow -->
-    <div class="state-flow-box">
-      <div class="card-title" style="margin-bottom:16px;">terraform apply execution flow</div>
-      <div class="state-steps">
-        <div class="state-step">
-          <div class="ss-num">01</div>
-          <div class="ss-label">terraform init</div>
-          <div class="ss-sub">downloads provider, connects to S3 + DynamoDB</div>
-        </div>
-        <div class="state-step-arrow">&#8594;</div>
-        <div class="state-step">
-          <div class="ss-num">02</div>
-          <div class="ss-label">Download state</div>
-          <div class="ss-sub">reads current .tfstate from S3</div>
-        </div>
-        <div class="state-step-arrow">&#8594;</div>
-        <div class="state-step">
-          <div class="ss-num">03</div>
-          <div class="ss-label">Acquire lock</div>
-          <div class="ss-sub">writes LockID to DynamoDB</div>
-        </div>
-        <div class="state-step-arrow">&#8594;</div>
-        <div class="state-step">
-          <div class="ss-num">04</div>
-          <div class="ss-label">Execute</div>
-          <div class="ss-sub">creates / modifies AWS resources</div>
-        </div>
-        <div class="state-step-arrow">&#8594;</div>
-        <div class="state-step">
-          <div class="ss-num">05</div>
-          <div class="ss-label">Save state</div>
-          <div class="ss-sub">writes updated .tfstate to S3</div>
-        </div>
-        <div class="state-step-arrow">&#8594;</div>
-        <div class="state-step">
-          <div class="ss-num">06</div>
-          <div class="ss-label">Release lock</div>
-          <div class="ss-sub">deletes LockID from DynamoDB</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Locking mechanism -->
-    <div class="card">
-      <div class="card-title">Locking mechanism</div>
-      <div class="lock-diagram">
-        <div class="lock-card">
-          <div class="lc-title">&#128274; Lock Acquired</div>
-          <div class="lc-text">
-            When Terraform starts, it writes a record to DynamoDB with key <code>LockID</code> = the S3 state path (<code>cicd-k8s-terraform-state/eks/terraform.tfstate</code>). Any other Terraform process that tries to run sees the lock and waits or fails with an error.
+        <!-- Current execution flow -->
+        <div class="state-flow-box" style="margin-top:16px;margin-bottom:0;">
+          <div class="card-title" style="margin-bottom:16px;">terraform apply execution flow</div>
+          <div class="state-steps">
+            <div class="state-step">
+              <div class="ss-num">01</div>
+              <div class="ss-label">Download state</div>
+              <div class="ss-sub">reads current .tfstate from S3</div>
+            </div>
+            <div class="state-step-arrow">&#8594;</div>
+            <div class="state-step">
+              <div class="ss-num">02</div>
+              <div class="ss-label">Acquire lock</div>
+              <div class="ss-sub">writes .tflock file to S3</div>
+            </div>
+            <div class="state-step-arrow">&#8594;</div>
+            <div class="state-step">
+              <div class="ss-num">03</div>
+              <div class="ss-label">Execute</div>
+              <div class="ss-sub">creates / modifies AWS resources</div>
+            </div>
+            <div class="state-step-arrow">&#8594;</div>
+            <div class="state-step">
+              <div class="ss-num">04</div>
+              <div class="ss-label">Save state</div>
+              <div class="ss-sub">writes updated .tfstate to S3</div>
+            </div>
+            <div class="state-step-arrow">&#8594;</div>
+            <div class="state-step">
+              <div class="ss-num">05</div>
+              <div class="ss-label">Release lock</div>
+              <div class="ss-sub">deletes .tflock file from S3</div>
+            </div>
           </div>
         </div>
-        <div class="lock-card">
-          <div class="lc-title">&#128275; Lock Released</div>
-          <div class="lc-text">
-            After apply completes (or fails), Terraform deletes the DynamoDB record, releasing the lock. If a process crashes without releasing, you can force-unlock with <code>terraform force-unlock &lt;LOCK_ID&gt;</code>.
+
+        <!-- Locking mechanism -->
+        <div class="card" style="margin-top:16px;margin-bottom:0;">
+          <div class="card-title">Locking mechanism</div>
+          <div class="lock-diagram">
+            <div class="lock-card">
+              <div class="lc-title">&#128274; Lock Acquired</div>
+              <div class="lc-text">
+                When Terraform starts, it writes a <code>.tflock</code> file to S3 alongside the state object (e.g. <code>eks/terraform.tfstate.tflock</code>). Any other Terraform process that tries to run sees the lock file and fails with a conflict error.
+              </div>
+            </div>
+            <div class="lock-card">
+              <div class="lc-title">&#128275; Lock Released</div>
+              <div class="lc-text">
+                After apply completes (or fails), Terraform deletes the <code>.tflock</code> object from S3, releasing the lock. If a process crashes without releasing, you can force-unlock with <code>terraform force-unlock &lt;LOCK_ID&gt;</code>.
+              </div>
+            </div>
+            <div class="lock-card">
+              <div class="lc-title">&#9989; CI/CD Credentials</div>
+              <div class="lc-text">
+                GitHub Actions uses <code>AWS_ACCESS_KEY_ID</code> + <code>AWS_SECRET_ACCESS_KEY</code> + <code>AWS_DEFAULT_REGION</code> injected as repository secrets. Local development uses <code>AWS_PROFILE=cicd-k8s</code> via <code>set-profile.ps1</code>.
+              </div>
+            </div>
           </div>
         </div>
-        <div class="lock-card">
-          <div class="lc-title">&#9989; CI/CD Credentials</div>
-          <div class="lc-text">
-            GitHub Actions uses <code>AWS_ACCESS_KEY_ID</code> + <code>AWS_SECRET_ACCESS_KEY</code> + <code>AWS_DEFAULT_REGION</code> injected as repository secrets. Local development uses <code>AWS_PROFILE=cicd-k8s</code> via <code>set-profile.ps1</code>.
+
+        <!-- Bootstrap commands (current) -->
+        <details style="margin-top:16px;">
+          <summary>&#128736; Bootstrap commands (one-time setup — S3 only)</summary>
+          <div class="warn-box" style="margin-bottom:12px;">
+            &#9888; The S3 bucket must exist <strong>before</strong> running <code>terraform init</code>. It cannot be managed by Terraform itself (chicken-and-egg problem) — create it manually once via AWS CLI. No DynamoDB table is needed.
           </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Bootstrap commands -->
-    <details>
-      <summary>&#128736; Bootstrap commands (one-time setup)</summary>
-      <div class="warn-box" style="margin-bottom:12px;">
-        &#9888; These resources must exist <strong>before</strong> running <code>terraform init</code>. They cannot be managed by Terraform itself (chicken-and-egg problem) — create them manually once via AWS CLI.
-      </div>
-
-      <div style="display:flex;flex-direction:column;gap:12px;">
-        <div>
-          <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">1. Create S3 bucket</div>
-          <pre>aws s3api create-bucket \
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div>
+              <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">1. Create S3 bucket</div>
+              <pre>aws s3api create-bucket \
   --bucket cicd-k8s-terraform-state \
   --region eu-west-1 \
   --create-bucket-configuration LocationConstraint=eu-west-1 \
   --profile cicd-k8s</pre>
-        </div>
-        <div>
-          <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">2. Enable versioning</div>
-          <pre>aws s3api put-bucket-versioning \
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">2. Enable versioning</div>
+              <pre>aws s3api put-bucket-versioning \
   --bucket cicd-k8s-terraform-state \
   --versioning-configuration Status=Enabled \
   --profile cicd-k8s</pre>
-        </div>
-        <div>
-          <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">3. Block all public access</div>
-          <pre>aws s3api put-public-access-block \
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">3. Block all public access</div>
+              <pre>aws s3api put-public-access-block \
   --bucket cicd-k8s-terraform-state \
   --public-access-block-configuration \
     "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true" \
   --profile cicd-k8s</pre>
+            </div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- Historical / deprecated: S3 + DynamoDB -->
+    <details style="margin-top:4px;">
+      <summary style="color:var(--text-muted);">&#128214; Historical reference — old S3 + DynamoDB approach (deprecated)</summary>
+
+      <div style="padding:14px 0 4px;">
+        <div class="warn-box" style="margin-bottom:16px;">
+          &#9888; <strong>Deprecated.</strong> The DynamoDB table <code>cicd-k8s-terraform-locks</code> has been deleted — it is no longer in use. The backend now uses <code>use_lockfile = true</code> (S3 native locking). This section is kept for historical reference only.
         </div>
-        <div>
-          <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">4. Create DynamoDB lock table</div>
-          <pre>aws dynamodb create-table \
-  --table-name cicd-k8s-terraform-locks \
-  --attribute-definitions AttributeName=LockID,AttributeType=S \
-  --key-schema AttributeName=LockID,KeyType=HASH \
-  --billing-mode PAY_PER_REQUEST \
-  --region eu-west-1 \
-  --profile cicd-k8s</pre>
+
+        <div style="font-size:13px;font-weight:700;color:var(--text-muted);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+          <span>&#128202;</span> Old approach: S3 + DynamoDB locking
+        </div>
+
+        <!-- Old detail cards -->
+        <div class="state-grid">
+          <div class="state-card" style="opacity:0.75;">
+            <div class="state-card-header s3">&#128193; S3 Bucket (unchanged)</div>
+            <div class="state-card-body">
+              <div class="state-prop">
+                <div class="state-prop-label">Name</div>
+                <div class="state-prop-value">cicd-k8s-terraform-state</div>
+              </div>
+              <div class="state-prop">
+                <div class="state-prop-label">State key path</div>
+                <div class="state-prop-value">eks/terraform.tfstate</div>
+              </div>
+              <div class="state-prop">
+                <div class="state-prop-label">Region</div>
+                <div class="state-prop-value">eu-west-1</div>
+              </div>
+              <div class="state-prop">
+                <div class="state-prop-label">Encryption</div>
+                <div class="state-prop-value">encrypt = true (AES-256)</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="state-card" style="opacity:0.75;">
+            <div class="state-card-header dynamo">&#128202; DynamoDB Table (deleted)</div>
+            <div class="state-card-body">
+              <div class="state-prop">
+                <div class="state-prop-label">Name</div>
+                <div class="state-prop-value" style="text-decoration:line-through;color:var(--text-muted);">cicd-k8s-terraform-locks</div>
+              </div>
+              <div class="state-prop">
+                <div class="state-prop-label">Partition key</div>
+                <div class="state-prop-value">LockID (STRING)</div>
+              </div>
+              <div class="state-prop">
+                <div class="state-prop-label">Billing mode</div>
+                <div class="state-prop-value">PAY_PER_REQUEST</div>
+              </div>
+              <div class="state-prop">
+                <div class="state-prop-label">Status</div>
+                <div class="state-prop-value" style="color:var(--red-text);">Deleted — no longer needed</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="state-card" style="opacity:0.75;">
+            <div class="state-card-header" style="background:rgba(127,142,163,0.12);border-bottom:1px solid rgba(127,142,163,0.3);color:var(--text-muted);">
+              &#128274; Old backend config
+            </div>
+            <div class="state-card-body">
+              <pre style="margin:0;font-size:11.5px;opacity:0.7;">backend "s3" {
+  bucket         = "cicd-k8s-terraform-state"
+  key            = "eks/terraform.tfstate"
+  region         = "eu-west-1"
+  dynamodb_table = "cicd-k8s-terraform-locks"
+  encrypt        = true
+}</pre>
+              <div class="warn-box" style="margin-top:10px;font-size:11px;">
+                <strong>dynamodb_table</strong> — the old locking parameter. DynamoDB handled distributed locking by storing a <code>LockID</code> record for the duration of each Terraform operation.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Old execution flow -->
+        <div class="state-flow-box" style="margin-top:16px;opacity:0.75;">
+          <div class="card-title" style="margin-bottom:16px;">Old execution flow (S3 + DynamoDB)</div>
+          <div class="state-steps">
+            <div class="state-step">
+              <div class="ss-num">01</div>
+              <div class="ss-label">terraform init</div>
+              <div class="ss-sub">connects to S3 + DynamoDB</div>
+            </div>
+            <div class="state-step-arrow">&#8594;</div>
+            <div class="state-step">
+              <div class="ss-num">02</div>
+              <div class="ss-label">Download state</div>
+              <div class="ss-sub">reads .tfstate from S3</div>
+            </div>
+            <div class="state-step-arrow">&#8594;</div>
+            <div class="state-step">
+              <div class="ss-num">03</div>
+              <div class="ss-label">Acquire lock</div>
+              <div class="ss-sub">writes LockID to DynamoDB</div>
+            </div>
+            <div class="state-step-arrow">&#8594;</div>
+            <div class="state-step">
+              <div class="ss-num">04</div>
+              <div class="ss-label">Execute</div>
+              <div class="ss-sub">creates / modifies AWS resources</div>
+            </div>
+            <div class="state-step-arrow">&#8594;</div>
+            <div class="state-step">
+              <div class="ss-num">05</div>
+              <div class="ss-label">Save state</div>
+              <div class="ss-sub">writes updated .tfstate to S3</div>
+            </div>
+            <div class="state-step-arrow">&#8594;</div>
+            <div class="state-step">
+              <div class="ss-num">06</div>
+              <div class="ss-label">Release lock</div>
+              <div class="ss-sub">deletes LockID from DynamoDB</div>
+            </div>
+          </div>
         </div>
       </div>
     </details>

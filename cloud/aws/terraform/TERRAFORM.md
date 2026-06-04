@@ -42,23 +42,50 @@ By default Terraform saves state in a local `terraform.tfstate` file. This break
 
 The solution is **Remote State**: the state file is stored centrally and protected by a lock so only one execution can run at a time.
 
-### S3 + DynamoDB (AWS standard)
+### Old approach: S3 + DynamoDB
+
+The original AWS standard for Terraform remote state used two resources:
 
 | Resource | Purpose |
 |----------|---------|
 | **S3 bucket** | Stores the `terraform.tfstate` file centrally |
 | **DynamoDB table** | Provides state locking — prevents two executions from running in parallel |
 
-Every time Terraform runs (locally or in GitHub Actions):
-1. Downloads state from S3
-2. Acquires lock on DynamoDB
-3. Executes changes
-4. Saves updated state to S3
-5. Releases lock
+Every time Terraform ran:
+1. Downloaded state from S3
+2. Acquired lock on DynamoDB
+3. Executed changes
+4. Saved updated state to S3
+5. Released lock on DynamoDB
+
+The DynamoDB table was configured in `main.tf` as:
+```hcl
+dynamodb_table = "cicd-k8s-terraform-locks"
+```
+
+And created via AWS CLI:
+```cmd
+aws dynamodb create-table --table-name cicd-k8s-terraform-locks --attribute-definitions AttributeName=LockID,AttributeType=S --key-schema AttributeName=LockID,KeyType=HASH --billing-mode PAY_PER_REQUEST --region eu-west-1 --profile cicd-k8s
+```
+
+> `PAY_PER_REQUEST` billing means you only pay when a lock is acquired — effectively free for this project.
+
+### Current approach: S3 + native lock file (Terraform 1.10+)
+
+The `dynamodb_table` parameter is now deprecated. Terraform 1.10+ introduced `use_lockfile = true` which stores the lock directly in S3 — no DynamoDB table needed.
+
+| Resource | Purpose |
+|----------|---------|
+| **S3 bucket** | Stores both the `terraform.tfstate` file and the lock file |
+
+The DynamoDB table `cicd-k8s-terraform-locks` was created during initial bootstrap but has since been deleted as it is no longer needed. The `main.tf` backend now uses:
+```hcl
+use_lockfile = true
+```
 
 ### Bootstrap (one-time setup)
 
-The S3 bucket and DynamoDB table must exist **before** running any Terraform configuration. They are created manually via AWS CLI — they cannot be managed by Terraform itself (chicken-and-egg problem).
+Only the S3 bucket needs to exist before running any Terraform configuration. It cannot be managed by Terraform itself (chicken-and-egg problem).
 
 Create the S3 bucket:
 ```cmd
@@ -74,13 +101,6 @@ Block public access (state files must never be public):
 ```cmd
 aws s3api put-public-access-block --bucket cicd-k8s-terraform-state --public-access-block-configuration "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true" --profile cicd-k8s
 ```
-
-Create the DynamoDB table for locking:
-```cmd
-aws dynamodb create-table --table-name cicd-k8s-terraform-locks --attribute-definitions AttributeName=LockID,AttributeType=S --key-schema AttributeName=LockID,KeyType=HASH --billing-mode PAY_PER_REQUEST --region eu-west-1 --profile cicd-k8s
-```
-
-> `PAY_PER_REQUEST` billing means you only pay when a lock is acquired — effectively free for this project.
 
 ---
 

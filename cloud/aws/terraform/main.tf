@@ -14,8 +14,8 @@ terraform {
     bucket         = "cicd-k8s-terraform-state"  # S3 bucket created during bootstrap
     key            = "eks/terraform.tfstate"      # path inside the bucket where state is stored
     region         = "eu-west-1"                  # NOTE: variables are not supported in backend blocks — must be hardcoded
-    dynamodb_table = "cicd-k8s-terraform-locks"   # DynamoDB table for state locking
-    encrypt        = true                         # encrypt state file at rest
+    use_lockfile = true  # uses a lock file in S3 instead of DynamoDB — the modern approach (dynamodb_table is deprecated)
+    encrypt      = true  # encrypt state file at rest
     # locally: set AWS_PROFILE=cicd-k8s
     # CI/CD:   set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION
   }
