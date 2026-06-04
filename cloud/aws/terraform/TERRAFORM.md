@@ -202,13 +202,67 @@ Shows exactly what will be created, modified, or destroyed — nothing is change
 terraform apply
 ```
 
-Creates all resources in AWS. See cost warning in [SETUP.md](../SETUP.md).
+After apply completes, verify the resources in the AWS Console (region: **eu-west-1**):
 
-### Step 5 — Destroy (always run this when done to avoid costs)
+| AWS Service | Console path | What to verify |
+|-------------|-------------|----------------|
+| **EKS** | EKS → Clusters | `cicd-k8s-cluster` exists, status Active |
+| **EKS** | EKS → Clusters → cicd-k8s-cluster → Compute tab | Fargate profiles: `kube-system`, `dev`, `staging` — each with status Active |
+| **VPC** | VPC → Your VPCs | `cicd-k8s-cluster-vpc` exists |
+| **VPC** | VPC → Subnets | 4 subnets: 2 public (`10.0.0.0/24`, `10.0.1.0/24`), 2 private (`10.0.10.0/24`, `10.0.11.0/24`) |
+| **VPC** | VPC → Internet Gateways | `cicd-k8s-cluster-igw` attached to the VPC |
+| **VPC** | VPC → NAT Gateways | `cicd-k8s-cluster-nat` in state Available |
+| **VPC** | VPC → Route Tables | 2 route tables: public and private |
+| **EC2** | EC2 → Elastic IPs | 1 EIP allocated for the NAT Gateway |
+| **IAM** | IAM → Roles | `cicd-k8s-cluster-cluster-role` and `cicd-k8s-cluster-fargate-role` |
+| **S3** | S3 → cicd-k8s-terraform-state | `eks/terraform.tfstate` file exists |
+
+### Step 5 — Connect kubectl to the cluster
+
+After apply, configure kubectl to talk to EKS instead of Minikube:
+
+```cmd
+aws eks update-kubeconfig --name cicd-k8s-cluster --region eu-west-1 --profile cicd-k8s
+```
+
+Verify the connection:
+```cmd
+kubectl get pods -A
+```
+
+#### Grant AWS Console access to Kubernetes resources
+
+By default the AWS Console shows: *"Your current IAM principal doesn't have access to Kubernetes objects on this cluster."* This is because the console needs an explicit EKS access entry.
+
+Run these two commands once after `terraform apply`:
+
+```cmd
+aws eks create-access-entry --cluster-name cicd-k8s-cluster --principal-arn arn:aws:iam::664003006512:user/cicd-k8s-admin --region eu-west-1 --profile cicd-k8s
+```
+
+```cmd
+aws eks associate-access-policy --cluster-name cicd-k8s-cluster --principal-arn arn:aws:iam::664003006512:user/cicd-k8s-admin --policy-arn arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy --access-scope type=cluster --region eu-west-1 --profile cicd-k8s
+```
+
+After this, the AWS Console EKS → Resources tab will show pods, deployments, and namespaces.
+
+You should see system pods running in the `kube-system` namespace on Fargate.
+
+Then deploy the app to the dev namespace:
+```cmd
+kubectl apply -k k8s/overlays/dev
+kubectl get all -n dev
+```
+
+The app is now running on AWS EKS. To access it externally, the LoadBalancer Service will be assigned a DNS hostname by AWS (not an IP like on Minikube).
+
+### Step 6 — Destroy (always run this when done to avoid costs)
 
 ```cmd
 terraform destroy
 ```
+
+After destroy, verify in the AWS Console that all resources listed above are gone. Also check **CloudFormation → Stacks** to ensure no stacks were left behind.
 
 Destroys all resources managed by this configuration. Double-check in the AWS Console (**EKS** and **CloudFormation**) that no stacks are left behind.
 

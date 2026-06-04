@@ -34,7 +34,7 @@ resource "aws_internet_gateway" "main" {  # "aws_internet_gateway" is the Terraf
 # -----------------------------------------------------------------------
 
 resource "aws_subnet" "public" {
-  count             = 2                                         # create 2 subnets — one per availability zone for high availability
+  count             = 2                                         # 2 subnets — one per AZ. EKS + Fargate requires a minimum of 2 AZs, this is not optional
   vpc_id            = aws_vpc.main.id                          # place subnets inside our VPC
   cidr_block        = "10.0.${count.index}.0/24"               # 10.0.0.0/24 and 10.0.1.0/24 — 256 addresses each
   availability_zone = data.aws_availability_zones.available.names[count.index]  # spread across AZs
@@ -53,7 +53,7 @@ resource "aws_subnet" "public" {
 # -----------------------------------------------------------------------
 
 resource "aws_subnet" "private" {
-  count             = 2                                         # create 2 subnets — one per availability zone
+  count             = 2                                         # 2 subnets — one per AZ. Must match the public subnet count above
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.${count.index + 10}.0/24"          # 10.0.10.0/24 and 10.0.11.0/24 — offset to avoid overlap with public subnets
   availability_zone = data.aws_availability_zones.available.names[count.index]

@@ -42,7 +42,10 @@ Environments are simulated locally as **Kubernetes namespaces** — no real clou
 - [x] Add GitHub Actions step to deploy to dev on every push to `main`
 - [x] Add staging deployment with a manual gate
 - [x] Add prod deployment with manual approval
-- [ ] Migrate to AWS EKS
+- [x] Provision EKS cluster with Terraform (vpc, iam, eks modules)
+- [ ] Connect kubectl to EKS and deploy app to dev namespace
+- [ ] Unlock deploy jobs in GitHub Actions pipeline (uncomment kubectl steps)
+- [ ] Migrate to AWS EKS (prod on separate account)
 
 ---
 

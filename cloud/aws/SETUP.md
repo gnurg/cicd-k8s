@@ -44,6 +44,9 @@ Create a dedicated IAM user for CLI access — never use root credentials for da
 | `IAMFullAccess` | EKS automatically creates IAM roles during setup (one for the cluster, one for the nodes). Without this it cannot create those roles and the cluster won't start. |
 | `AmazonS3FullAccess` | Create and manage the S3 bucket used for Terraform remote state storage. |
 | `AmazonDynamoDBFullAccess` | Create and manage the DynamoDB table used for Terraform state locking. |
+| `AmazonEC2FullAccess` | Create and manage EC2 resources required by the VPC module (Elastic IP, subnets, NAT Gateway, route tables, internet gateway). |
+| `AmazonEKSServicePolicy` | AWS managed policy for the EKS service role. |
+| `cicd-k8s-EKSFullAccess` *(inline policy)* | Custom inline policy granting full EKS administration (`eks:*`). No AWS managed policy exists for this — must be created manually. JSON: `{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":"eks:*","Resource":"*"}]}` |
 
 > **Tech debt — Least Privilege:** The `*FullAccess` managed policies above are overly permissive and would never pass a security review in a real environment. The correct approach is to create **custom IAM policies** with only the specific actions needed. For example, S3 only needs `s3:CreateBucket`, `s3:PutBucketVersioning`, `s3:GetObject`, `s3:PutObject`, `s3:DeleteObject`, `s3:ListBucket`. Similarly for DynamoDB, EKS, and the others. For this personal learning project `FullAccess` policies are acceptable as a shortcut, but should be replaced with granular custom policies before using this setup in any shared or production environment.
 
