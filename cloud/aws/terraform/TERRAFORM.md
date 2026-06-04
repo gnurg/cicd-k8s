@@ -146,25 +146,51 @@ On GitHub Actions these are set via repository secrets and injected into the wor
 
 ## Usage
 
-Initialize (run once):
+### Step 1 — Set AWS credentials (every new terminal session)
+
+```powershell
+. .\cloud\aws\set-profile.ps1   # PowerShell
+```
 ```cmd
+call cloud\aws\set-profile.bat  # CMD
+```
+
+### Step 2 — Initialize (run once, or after adding new modules/providers)
+
+```cmd
+cd cloud\aws\terraform
 terraform init
 ```
 
-Preview changes:
+What `terraform init` does — **no AWS resources are created, no costs:**
+- Downloads the AWS provider plugin
+- Connects to the S3 bucket and verifies read/write access
+- Connects to the DynamoDB table and verifies lock access
+- The `terraform.tfstate` file in S3 is created only after the first `terraform apply`
+
+### Step 3 — Preview changes (free, read-only)
+
 ```cmd
-terraform plan -var-file="terraform.tfvars"
+terraform plan
 ```
 
-Apply:
+Shows exactly what will be created, modified, or destroyed — nothing is changed in AWS. Always run this before `apply` to verify the changes.
+
+### Step 4 — Apply (creates real AWS resources — costs money)
+
 ```cmd
-terraform apply -var-file="terraform.tfvars"
+terraform apply
 ```
 
-Destroy (always run this when done to avoid costs — see cost warning in [SETUP.md](../SETUP.md)):
+Creates all resources in AWS. See cost warning in [SETUP.md](../SETUP.md).
+
+### Step 5 — Destroy (always run this when done to avoid costs)
+
 ```cmd
-terraform destroy -var-file="terraform.tfvars"
+terraform destroy
 ```
+
+Destroys all resources managed by this configuration. Double-check in the AWS Console (**EKS** and **CloudFormation**) that no stacks are left behind.
 
 ---
 
