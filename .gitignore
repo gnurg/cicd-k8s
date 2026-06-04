@@ -13,3 +13,9 @@ docker-compose.override.yml
 
 ## Note: Python/app-specific ignores for Dockerapp/ are in Dockerapp/.gitignore
 
+## Terraform
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.backup
+**/*.tfvars
+
